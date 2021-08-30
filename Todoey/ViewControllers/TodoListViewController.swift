@@ -9,11 +9,23 @@
 import UIKit
 
 class TodoListViewController: UITableViewController {
-    var itemArray = ["First Row","Second Row","Thrid Row"]
+    
+    var itemArray = [Item]()
+    
+    var defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        itemArray.append(Item(tilte: "- \(itemArray.count + 1) Item", checked: false))
+        itemArray.append(Item(tilte: "- \(itemArray.count + 1) Item", checked: false))
+        itemArray.append(Item(tilte: "- \(itemArray.count + 1) Item", checked: false))
         // Do any additional setup after loading the view. 
+    }
+    override func viewWillAppear(_ animated: Bool) {
+        if let dataArray = defaults.array(forKey: Constants.UserDefaults.TodoArrayKey) as? [Item]
+        {
+            itemArray = dataArray
+        }
     }
     @IBAction func addNewTaskAction(_ sender: UIBarButtonItem) {
         var alertTextField = UITextField()
@@ -21,7 +33,9 @@ class TodoListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             if let text = alertTextField.text{
                 if(text.count > 0){
-                    self.itemArray.append(text)
+                    let newItem = Item(tilte: text, checked: false)
+                    self.itemArray.append(newItem)
+                    self.defaults.set(self.itemArray, forKey: Constants.UserDefaults.TodoArrayKey)
                     self.tableView.reloadData()
                 }
             }
