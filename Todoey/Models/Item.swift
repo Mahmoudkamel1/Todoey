@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Item {
+struct Item : Codable {
     var tilte: String
     var checked: Bool
 }

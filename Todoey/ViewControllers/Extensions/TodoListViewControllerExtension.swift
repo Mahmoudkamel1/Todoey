@@ -17,9 +17,9 @@ extension TodoListViewController{
         itemArray[indexPath.row].checked = cell?.accessoryType == .checkmark ? false : true
         tableView.reloadData()
         tableView.deselectRow(at: indexPath, animated: true)
+        saveItems()
         
     }
-    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return itemArray.count
     }
