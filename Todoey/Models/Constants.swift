@@ -10,6 +10,8 @@ import Foundation
 
 struct Constants{
     static let ReuseIdentifier = "TodoItemCell"
+    static let CategoriesToItemsSegueIdentifier = "CategoriesToItemsSegue"
+    static let CategoryCellIdentifier = "CategoryCell"
     
     struct UserDefaults {
         static let TodoArrayKey = "TodoArrayKey"

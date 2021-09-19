@@ -7,24 +7,22 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListViewController: UITableViewController {
-    
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    var selectedCategory: Category? {
+        didSet{
+            LoadData()
+        }
+    }
     var itemArray = [Item]()
+    var lastEditedText:String = ""
     
     //var defaults = UserDefaults.standard
     var filePath : URL?
     override func viewDidLoad() {
         super.viewDidLoad()
-        filePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("items.plist")
-        itemArray.append(Item(tilte: "- \(itemArray.count + 1) Item", checked: false))
-        itemArray.append(Item(tilte: "- \(itemArray.count + 1) Item", checked: false))
-        itemArray.append(Item(tilte: "- \(itemArray.count + 1) Item", checked: false))
-        // Do any additional setup after loading the view. 
-    }
-    override func viewWillAppear(_ animated: Bool) {
-        
-        loadData()
     }
     @IBAction func addNewTaskAction(_ sender: UIBarButtonItem) {
         
@@ -36,7 +34,10 @@ class TodoListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             if let text = alertTextField.text{
                 if(text.count > 0){
-                    let newItem = Item(tilte: text, checked: false)
+                    let newItem = Item(context: self.context)
+                    newItem.title = text
+                    newItem.checked = false
+                    newItem.parentCategory = self.selectedCategory
                     self.itemArray.append(newItem)
                     
                     self.saveItems()
@@ -55,25 +56,30 @@ class TodoListViewController: UITableViewController {
     }
     
     func saveItems (){
-        let encoder = PropertyListEncoder()
         do{
-            let data = try encoder.encode(self.itemArray)
-            try data.write(to: self.filePath!)
+            try context.save()
         }
         catch{
             print("there is an Error: \(error.localizedDescription)")
         }
     }
-    func loadData(){
-        if let data = try? Data(contentsOf: filePath!){
-            let decoder = PropertyListDecoder()
-            do{
-                self.itemArray = try decoder.decode([Item].self, from: data)
-            }
-            catch{
-                print("there is an Error: \(error.localizedDescription)")
-            }
+    func LoadData(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil){
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        if let basePredicate = predicate{
+            let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [basePredicate,categoryPredicate])
+            request.predicate = compoundPredicate
         }
+        else{
+            request.predicate = categoryPredicate
+        }
+        do{
+            itemArray = try context.fetch(request)
+            self.tableView.reloadData()
+        }
+        catch{
+            print("Error \(error) in Retriving Data")
+        }
+        
     }
 }
 

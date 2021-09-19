@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import CoreData
 
 extension TodoListViewController{
     
@@ -26,8 +27,32 @@ extension TodoListViewController{
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.ReuseIdentifier ,for: indexPath)
-        cell.textLabel?.text = itemArray[indexPath.row].tilte
+        cell.textLabel?.text = itemArray[indexPath.row].title
         cell.accessoryType = itemArray[indexPath.row].checked ? .checkmark : .none
         return cell
     }
+}
+//MARK: - UI SEARCH BAR Extension
+extension TodoListViewController: UISearchBarDelegate{
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text == nil || searchBar.text == ""{
+            lastEditedText = ""
+            LoadData()
+            
+        }
+        else if lastEditedText != searchBar.text{
+            lastEditedText = searchBar.text!
+            let request : NSFetchRequest<Item> = Item.fetchRequest()
+            let predicate = NSPredicate(format: "title CONTAINS[cd] %@", lastEditedText)
+            request.predicate = predicate
+            let sortDescriptor = NSSortDescriptor(key: "title", ascending: true)
+            request.sortDescriptors = [sortDescriptor]
+            LoadData(with: request)
+        }
+        DispatchQueue.main.async {
+            searchBar.resignFirstResponder()
+        }
+    }
+    
 }
